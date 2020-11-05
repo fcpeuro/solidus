@@ -10,6 +10,7 @@
   @else {
     @debug "Please correct $adjust value. It should be number and larger then 0. Currently it is '#{type-of($adjust)}' with value '#{$adjust}'"
   }
+  @return $color;
 };
 
 // Quick fix for dynamic variables missing in SASS
