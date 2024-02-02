@@ -37,7 +37,7 @@
     "jquery": "^3.4.0",
     "js-yaml": "^3.13.1",
     "numeral": "^2.0.6",
-    "popper.js": "^1.14.3"
+    "popper.js": "^1.16.1"
   },
   "resolutions": {
     "debug": "^2.6.9",
