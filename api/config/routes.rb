@@ -110,6 +110,9 @@ Spree::Core::Engine.routes.draw do
     resources :credit_cards, only: [:update]
 
     resources :properties
+
+    resources :roles
+
     resources :stock_locations do
       resources :stock_movements
       resources :stock_items

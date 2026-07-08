@@ -220,6 +220,50 @@ module Spree::Api
         expect(json_response["admin_metadata"]).to eq({"user_type" => "regular"})
       end
 
+      context "assigning roles" do
+        let!(:role) { create(:role, name: "customer_service") }
+        let!(:other_role) { create(:role, name: "warehouse") }
+
+        it "can assign roles when creating a user" do
+          post spree.api_users_path, params: {user: {email: "new@example.com", role_ids: [role.id]}}
+          expect(response.status).to eq(201)
+          expect(Spree.user_class.find(json_response["id"]).spree_roles).to contain_exactly(role)
+        end
+
+        it "can assign roles to an existing user" do
+          put spree.api_user_path(user), params: {user: {role_ids: [role.id, other_role.id]}}
+          expect(response.status).to eq(200)
+          expect(user.reload.spree_roles).to contain_exactly(role, other_role)
+        end
+
+        it "can unassign a role by omitting it" do
+          user.spree_roles = [role, other_role]
+          put spree.api_user_path(user), params: {user: {role_ids: [role.id]}}
+          expect(response.status).to eq(200)
+          expect(user.reload.spree_roles).to contain_exactly(role)
+        end
+
+        it "can unassign all roles with an empty array" do
+          user.spree_roles = [role]
+          put spree.api_user_path(user), params: {user: {role_ids: []}}
+          expect(response.status).to eq(200)
+          expect(user.reload.spree_roles).to be_empty
+        end
+
+        it "leaves roles untouched when role_ids is omitted" do
+          user.spree_roles = [role]
+          put spree.api_user_path(user), params: {user: {email: "unchanged@example.com"}}
+          expect(response.status).to eq(200)
+          expect(user.reload.spree_roles).to contain_exactly(role)
+        end
+
+        it "includes assigned roles in the response" do
+          user.spree_roles = [role]
+          get spree.api_user_path(user)
+          expect(json_response["roles"]).to contain_exactly("id" => role.id, "name" => role.name)
+        end
+      end
+
       it "can destroy user without orders" do
         user.orders.destroy_all
         delete spree.api_user_path(user)

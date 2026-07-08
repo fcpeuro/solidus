@@ -122,6 +122,8 @@ module Spree
 
     preference :property_attributes, :array, default: [:id, :name, :presentation]
 
+    preference :role_attributes, :array, default: [:id, :name, :description]
+
     preference :stock_location_attributes, :array, default: [
       :id, :name, :address1, :address2, :city, :state_id, :state_name,
       :country_id, :zipcode, :phone, :active

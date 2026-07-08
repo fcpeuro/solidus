@@ -15,3 +15,8 @@ json.ship_address do
     json.nil!
   end
 end
+if can?(:read, Spree::Role)
+  json.roles(user.spree_roles) do |role|
+    json.call(role, :id, :name)
+  end
+end

@@ -28,6 +28,7 @@ module Spree
         :payment_source_attributes,
         :user_attributes,
         :property_attributes,
+        :role_attributes,
         :stock_location_attributes,
         :stock_movement_attributes,
         :stock_item_attributes,

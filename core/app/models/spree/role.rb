@@ -9,6 +9,8 @@ module Spree
 
     validates :name, presence: true, uniqueness: {case_sensitive: true, allow_blank: true}
 
+    self.allowed_ransackable_attributes = %w[name description]
+
     def admin?
       name == "admin"
     end

@@ -1119,6 +1119,8 @@ paths:
         Updates a user.
 
         Only users with the `update` permission on the user can perform this action.
+
+        Roles can be assigned or unassigned by passing `role_ids`.
       operationId: update-user
       tags:
         - Users
@@ -3783,6 +3785,8 @@ paths:
         Creates a user.
 
         Only users with the `create` permission on `Spree::User` can perform this action.
+
+        Roles can be assigned at creation time by passing `role_ids`.
       operationId: create-user
       tags:
         - Users
@@ -3950,6 +3954,160 @@ paths:
                 value:
                   zone:
                     description: Brrr. The coldest one.
+  /roles:
+    get:
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/pagination-data'
+                  - type: object
+                    properties:
+                      roles:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/role'
+        '401':
+          $ref: '#/components/responses/invalid-api-key'
+      summary: List roles
+      description: |-
+        Lists all roles.
+
+        Only users with the `read` permission on `Spree::Role` can see roles.
+      operationId: list-roles
+      tags:
+        - Roles
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - $ref: '#/components/parameters/q'
+      security:
+        - api-key: []
+    post:
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/role'
+        '401':
+          $ref: '#/components/responses/invalid-api-key'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+      summary: Create role
+      description: |-
+        Creates a role.
+
+        Only users with the `create` permission on `Spree::Role` can perform this action.
+      operationId: create-role
+      tags:
+        - Roles
+      security:
+        - api-key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  $ref: '#/components/schemas/role-input'
+            examples:
+              Example:
+                value:
+                  role:
+                    name: customer_service
+                    description: Handles customer service requests.
+                    permission_set_ids:
+                      - 1
+                      - 2
+  '/roles/{id}':
+    get:
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/role'
+        '401':
+          $ref: '#/components/responses/invalid-api-key'
+        '404':
+          $ref: '#/components/responses/not-found'
+      summary: Get role
+      description: Retrieves a role.
+      operationId: get-role
+      tags:
+        - Roles
+      security:
+        - api-key: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The ID of the role
+    delete:
+      responses:
+        '204':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/role'
+        '401':
+          $ref: '#/components/responses/invalid-api-key'
+        '404':
+          $ref: '#/components/responses/not-found'
+      summary: Delete role
+      description: Deletes a role.
+      operationId: delete-role
+      tags:
+        - Roles
+      security:
+        - api-key: []
+    patch:
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/role'
+        '401':
+          $ref: '#/components/responses/invalid-api-key'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '422':
+          $ref: '#/components/responses/unprocessable-entity'
+      summary: Update role
+      description: |-
+        Updates a role.
+
+        Only users with the `update` permission on the role can perform this action.
+      operationId: update-role
+      tags:
+        - Roles
+      security:
+        - api-key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  $ref: '#/components/schemas/role-input'
+            examples:
+              Example:
+                value:
+                  role:
+                    description: Handles customer service requests and returns.
   '/promotions/{id}':
     get:
       responses:
@@ -5513,6 +5671,7 @@ tags:
   - name: Products
   - name: Promotions
   - name: Properties
+  - name: Roles
   - name: Return authorizations
   - name: Customer returns
   - name: Shipments
@@ -6344,6 +6503,20 @@ components:
         name:
           type: string
       title: Zone
+    role:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        permission_set_ids:
+          type: array
+          items:
+            type: integer
+      title: Role
     user:
       type: object
       properties:
@@ -6359,6 +6532,18 @@ components:
           $ref: '#/components/schemas/address'
         updated_at:
           type: string
+        roles:
+          type: array
+          description: >-
+            The roles assigned to the user. Only present when the requesting
+            user has the `read` permission on `Spree::Role`.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
       title: User
     return-authorization:
       type: object
@@ -7001,6 +7186,15 @@ components:
           $ref: '#/components/schemas/address-input'
         ship_address_attributes:
           $ref: '#/components/schemas/address-input'
+        role_ids:
+          type: array
+          description: >-
+            Assigns and unassigns roles by ID. Only roles the requesting user is
+            allowed to manage are affected; other roles are left untouched.
+            Omit to leave roles unchanged, or send an empty array to unassign
+            all manageable roles. Requires permission to manage `Spree::Role`.
+          items:
+            type: integer
     address-book-input:
       title: Address book input
       allOf:
@@ -7026,6 +7220,18 @@ components:
                 type: string
               zoneable_id:
                 type: integer
+    role-input:
+      type: object
+      title: Role input
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        permission_set_ids:
+          type: array
+          items:
+            type: integer
     coupon-code-input:
       type: object
       title: Coupon code input
