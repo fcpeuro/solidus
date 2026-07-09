@@ -40,14 +40,7 @@ module Spree
     # @param ability [CanCan::Ability] the ability to invoke declarations on
     # @param user [#spree_roles] the user that holds the spree_roles association.
     def activate_permissions!(ability, user)
-      spree_roles = ["default"] | user.spree_roles.map(&:name)
-      applicable_permissions = Set.new
-
-      spree_roles.each do |role_name|
-        applicable_permissions |= roles[role_name].permission_sets
-      end
-
-      applicable_permissions.each do |permission_set|
+      permission_sets_for(user).each do |permission_set|
         permission_set.new(ability).activate!
       end
     end
@@ -69,6 +62,47 @@ module Spree
 
       roles[name].permission_sets.concat permission_sets
       roles[name]
+    end
+
+    private
+
+    # Combines the permission sets configured in code (keyed by role name) with,
+    # when {Spree::Config#activate_persisted_permission_sets} is enabled, the
+    # permission sets persisted against the user's roles in the database.
+    #
+    # The returned {Spree::Core::ClassConstantizer::Set} dedupes by class name,
+    # so a permission set present in both sources is activated only once.
+    #
+    # @param user [#spree_roles]
+    # @return [Spree::Core::ClassConstantizer::Set]
+    def permission_sets_for(user)
+      combined = Spree::Core::ClassConstantizer::Set.new
+
+      role_names = ["default"] | user.spree_roles.map(&:name)
+      role_names.each { |role_name| combined.concat(roles[role_name].permission_sets) }
+
+      if Spree::Config.activate_persisted_permission_sets
+        combined.concat(persisted_permission_set_names(user))
+      end
+
+      combined
+    end
+
+    # The class names of the permission sets associated to the user's roles in
+    # the database. Names that no longer resolve to a defined class (e.g. a
+    # permission set removed from the codebase) are ignored.
+    #
+    # @param user [#spree_roles]
+    # @return [Array<String>]
+    def persisted_permission_set_names(user)
+      return [] if user.spree_roles.empty?
+
+      Spree::PermissionSet
+        .joins(:roles)
+        .where(spree_roles: {id: user.spree_roles.ids})
+        .distinct
+        .pluck(:set)
+        .select { |set| set.present? && set.safe_constantize }
     end
   end
 end

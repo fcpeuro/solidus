@@ -140,5 +140,51 @@ RSpec.describe Spree::RoleConfiguration do
         expect(ability.can?(:manage, :things)).to be false
       end
     end
+
+    context "with permission sets persisted against the user's roles" do
+      # Use a persisted user so the roles/permission-sets associations resolve
+      # through the database rather than only in memory.
+      let(:user) { create(:user) }
+      let(:user_roles) { ["testrole"] }
+
+      let!(:permission_set) do
+        Spree::PermissionSet.create!(
+          name: "Dummy",
+          set: "DummyPermissionSet",
+          privilege: "management",
+          category: "thing"
+        )
+      end
+
+      before do
+        user.spree_roles.each { |role| role.permission_sets << permission_set }
+      end
+
+      context "when activate_persisted_permission_sets is enabled" do
+        before { stub_spree_preferences(activate_persisted_permission_sets: true) }
+
+        it "activates the permission sets associated to the user's roles" do
+          expect { subject }.to change { ability.can? :manage, :things }
+            .from(false)
+            .to(true)
+        end
+
+        context "when a persisted permission set no longer resolves to a class" do
+          before { permission_set.update_column(:set, "Spree::PermissionSets::NoLongerExists") }
+
+          it "ignores the missing permission set" do
+            subject
+            expect(ability.can?(:manage, :things)).to be false
+          end
+        end
+      end
+
+      context "when activate_persisted_permission_sets is disabled" do
+        it "does not activate database-backed permission sets" do
+          subject
+          expect(ability.can?(:manage, :things)).to be false
+        end
+      end
+    end
   end
 end

@@ -158,6 +158,16 @@ module Spree
     #   at role_user creation for all roles. (default: +false+)
     preference :generate_api_key_for_all_roles, :boolean, default: false
 
+    # @!attribute [rw] activate_persisted_permission_sets
+    #   When true, the permission sets associated to a user's roles in the
+    #   database ({Spree::Role#permission_sets}) are activated when building the
+    #   user's {Spree::Ability}, in addition to those configured in code via
+    #   {Spree::Config#roles}. Because a fresh ability is built per request,
+    #   edits to those associations take effect on the next request without
+    #   restarting the application.
+    #   @return [Boolean] (default: +false+)
+    preference :activate_persisted_permission_sets, :boolean, default: false
+
     # @!attribute [rw] inventory_cache_threshold
     #   Only invalidate product caches when the count on hand for a stock item
     #   falls below or rises about the inventory_cache_threshold.  When undefined, the

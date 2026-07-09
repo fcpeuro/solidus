@@ -23,6 +23,25 @@ RSpec.describe Spree::Ability, type: :model do
 
       subject
     end
+
+    context "with activate_persisted_permission_sets enabled" do
+      let(:user) { create(:user, spree_roles: [role]) }
+      let(:role) { create(:role, name: "inventory_manager") }
+
+      before do
+        stub_spree_preferences(activate_persisted_permission_sets: true)
+        role.permission_sets << Spree::PermissionSet.find_or_create_by!(
+          name: "StockManagement",
+          set: "Spree::PermissionSets::StockManagement",
+          privilege: "management",
+          category: "stock"
+        )
+      end
+
+      it "activates permission sets persisted against the user's roles" do
+        expect(subject.can?(:manage, Spree::StockItem)).to be(true)
+      end
+    end
   end
 
   context "register_ability" do
