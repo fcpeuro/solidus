@@ -2,7 +2,7 @@
 # This image is intended to be used to test and demo Solidus
 # it is not intended for production purposes 
 #
-FROM ruby:2.5.1
+FROM ruby:2.7.8
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 
