@@ -12,7 +12,7 @@ module SolidusAdmin
 
     def index
       respond_to do |format|
-        format.html { render component("stock_items/index").new(page: @page) }
+        format.html { render component("stock_items/index").new(results: @results) }
       end
     end
 

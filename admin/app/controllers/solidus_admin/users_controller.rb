@@ -19,10 +19,10 @@ module SolidusAdmin
         param: :q
       )
 
-      set_page_and_extract_portion_from(users)
+      users = users.page(params[:page]).without_count
 
       respond_to do |format|
-        format.html { render component("users/index").new(page: @page) }
+        format.html { render component("users/index").new(results: users) }
       end
     end
 

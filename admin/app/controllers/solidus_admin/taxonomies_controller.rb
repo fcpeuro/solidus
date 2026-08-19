@@ -11,10 +11,10 @@ module SolidusAdmin
         param: :q
       )
 
-      set_page_and_extract_portion_from(taxonomies)
+      taxonomies = taxonomies.page(params[:page]).without_count
 
       respond_to do |format|
-        format.html { render component("taxonomies/index").new(page: @page) }
+        format.html { render component("taxonomies/index").new(results: taxonomies) }
       end
     end
 

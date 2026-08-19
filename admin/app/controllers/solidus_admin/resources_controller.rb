@@ -16,14 +16,12 @@ module SolidusAdmin
     # Uses {set_paginated_resources} to set @resources
     # and a instance variable with the plural name of the resource.
     #
-    # Uses the geared_pagination gem to set @page for pagination.
-    #
     # @see set_paginated_resources
     # @see resources_collection
     def index
       respond_to do |format|
-        format.html { render index_component.new(page: @page) }
-        format.json { render json: blueprint.render(@page.records, view: blueprint_view) }
+        format.html { render index_component.new(results: @results) }
+        format.json { render json: blueprint.render(@results.records, view: blueprint_view) }
       end
     end
 
@@ -79,8 +77,7 @@ module SolidusAdmin
         param: :q
       ).tap do |resources|
         instance_variable_set("@#{plural_resource_name}", resources)
-        # sets @page instance variable in geared_pagination gem
-        set_page_and_extract_portion_from(resources, ordered_by: resources_sorting_options, per_page:)
+        @results = resources.reorder(resources_sorting_options).page(params[:page]).per(per_page).without_count
       end
     end
 

@@ -16,10 +16,10 @@ module SolidusPromotions
         param: :q
       )
 
-      set_page_and_extract_portion_from(promotions)
+      promotions = promotions.page(params[:page]).without_count
 
       respond_to do |format|
-        format.html { render component("solidus_promotions/promotions/index").new(page: @page) }
+        format.html { render component("solidus_promotions/promotions/index").new(results: promotions) }
       end
     end
 

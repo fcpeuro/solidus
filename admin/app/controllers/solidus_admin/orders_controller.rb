@@ -18,10 +18,10 @@ module SolidusAdmin
         distinct: false
       )
 
-      set_page_and_extract_portion_from(orders)
+      orders = orders.page(params[:page]).without_count
 
       respond_to do |format|
-        format.html { render component("orders/index").new(page: @page) }
+        format.html { render component("orders/index").new(results: orders) }
       end
     end
 

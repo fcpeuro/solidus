@@ -49,8 +49,43 @@ class SolidusAdmin::UI::Pages::Index::Component < SolidusAdmin::BaseComponent
     []
   end
 
-  def initialize(page:)
-    @page = page
+  # Wraps a geared_pagination page object to provide Kaminari-compatible methods.
+  class GearedPaginationProxy < SimpleDelegator
+    def current_page
+      __getobj__.number
+    end
+
+    def first_page?
+      current_page == 1
+    end
+
+    def last_page?
+      __getobj__.last?
+    end
+
+    def next_page
+      current_page + 1 unless last_page?
+    end
+
+    def limit_value
+      __getobj__.record_size
+    end
+
+    def records
+      __getobj__.to_a
+    end
+  end
+
+  def initialize(page: nil, results: nil)
+    if page
+      Spree.deprecator.warn(
+        "Passing `page:` to #{self.class.name} is deprecated. Pass a Kaminari result as `results:` instead.",
+        caller
+      )
+      @results = GearedPaginationProxy.new(page)
+    else
+      @results = results
+    end
   end
 
   def row_fade(_record)
@@ -76,15 +111,15 @@ class SolidusAdmin::UI::Pages::Index::Component < SolidusAdmin::BaseComponent
   end
 
   def rows
-    @page.records
+    @results.records
   end
 
   def prev_page_path
-    solidus_admin.url_for(**request.params, page: @page.number - 1, only_path: true) unless @page.first?
+    solidus_admin.url_for(**request.params, page: @results.current_page - 1, only_path: true) unless @results.first_page?
   end
 
   def next_page_path
-    solidus_admin.url_for(**request.params, page: @page.next_param, only_path: true) unless @page.last?
+    solidus_admin.url_for(**request.params, page: @results.next_page, only_path: true) unless @results.last_page?
   end
 
   def search_options
@@ -121,8 +156,8 @@ class SolidusAdmin::UI::Pages::Index::Component < SolidusAdmin::BaseComponent
         columns:,
         batch_actions:,
         url: -> { row_url(_1) },
-        page: @page.number,
-        per_page: @page.recordset.ratios.fixed
+        page: @results.current_page,
+        per_page: @results.limit_value
       },
       search: search_options,
       sortable: sortable_options

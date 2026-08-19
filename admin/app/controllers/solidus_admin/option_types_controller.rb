@@ -11,10 +11,10 @@ module SolidusAdmin
         param: :q
       )
 
-      set_page_and_extract_portion_from(option_types)
+      option_types = option_types.page(params[:page]).without_count
 
       respond_to do |format|
-        format.html { render component("option_types/index").new(page: @page) }
+        format.html { render component("option_types/index").new(results: option_types) }
       end
     end
 

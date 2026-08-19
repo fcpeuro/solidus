@@ -10,10 +10,10 @@ module SolidusAdmin
         param: :q
       )
 
-      set_page_and_extract_portion_from(shipping_methods)
+      shipping_methods = shipping_methods.page(params[:page]).without_count
 
       respond_to do |format|
-        format.html { render component("shipping_methods/index").new(page: @page) }
+        format.html { render component("shipping_methods/index").new(results: shipping_methods) }
       end
     end
 

@@ -10,10 +10,10 @@ module SolidusAdmin
         param: :q
       )
 
-      set_page_and_extract_portion_from(stores)
+      stores = stores.page(params[:page]).without_count
 
       respond_to do |format|
-        format.html { render component("stores/index").new(page: @page) }
+        format.html { render component("stores/index").new(results: stores) }
       end
     end
 

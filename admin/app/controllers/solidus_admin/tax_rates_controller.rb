@@ -10,10 +10,10 @@ module SolidusAdmin
         param: :q
       )
 
-      set_page_and_extract_portion_from(tax_rates)
+      tax_rates = tax_rates.page(params[:page]).without_count
 
       respond_to do |format|
-        format.html { render component("tax_rates/index").new(page: @page) }
+        format.html { render component("tax_rates/index").new(results: tax_rates) }
       end
     end
 

@@ -23,13 +23,10 @@ module SolidusAdmin
         distinct: false
       )
 
-      set_page_and_extract_portion_from(
-        products,
-        ordered_by: {name: :asc}
-      )
+      products = products.order(name: :asc).page(params[:page]).without_count
 
       respond_to do |format|
-        format.html { render component("products/index").new(page: @page) }
+        format.html { render component("products/index").new(results: products) }
       end
     end
 

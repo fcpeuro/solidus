@@ -18,7 +18,7 @@ class SolidusAdmin::Orders::Show::Adjustments::Index::Component < SolidusAdmin::
   def initialize(order:, adjustments:)
     @order = order
     @adjustments = adjustments
-    @page = GearedPagination::Recordset.new(adjustments, per_page: adjustments.size).page(1)
+    @results = adjustments
   end
 
   def batch_actions

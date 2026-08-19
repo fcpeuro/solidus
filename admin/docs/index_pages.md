@@ -20,22 +20,15 @@ class SolidusAdmin::UsersController < SolidusAdmin::BaseController
     # ...
 ```
 
-For pagination support, the index action should also call the `set_page_and_extract_portion_from` method provided by the `geared_pagination` gem. This method sets the `@page` instance variable to the paginated collection and returns the portion of the collection to be displayed on the current page.
+For pagination support, use kaminari's `.page` and `.without_count` methods on the relation.
+
+Finally, the index action should render the `index` component passing the paginated results as the `results` prop.
 
 ```ruby
 def index
   users = apply_search_to(Spree.user_class.order(id: :desc), param: :q)
-  set_page_and_extract_portion_from(users)
-  # ...
-```
-
-Finally, the index action should render the `index` component passing the `@page` instance variable as the `collection` prop.
-
-```ruby
-def index
-  users = apply_search_to(Spree.user_class.order(id: :desc), param: :q)
-  set_page_and_extract_portion_from(users)
-  render component('users/index').new(page: @page)
+  users = users.page(params[:page]).without_count
+  render component('users/index').new(results: users)
 end
 ```
 
@@ -54,7 +47,7 @@ class SolidusAdmin::Users::Index < Solidus::Admin::UI::Pages::Index
   end
 end
 
-render component('users/index').new(page: @page)
+render component('users/index').new(results: users)
 ```
 
 ## Batch Actions

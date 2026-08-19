@@ -10,10 +10,10 @@ module SolidusAdmin
         param: :q
       )
 
-      set_page_and_extract_portion_from(reimbursement_types)
+      reimbursement_types = reimbursement_types.page(params[:page]).without_count
 
       respond_to do |format|
-        format.html { render component("reimbursement_types/index").new(page: @page) }
+        format.html { render component("reimbursement_types/index").new(results: reimbursement_types) }
       end
     end
 

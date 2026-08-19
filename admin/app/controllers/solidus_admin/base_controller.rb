@@ -1,12 +1,9 @@
 # frozen_string_literal: true
 
-require "geared_pagination"
-
 module SolidusAdmin
   class BaseController < ApplicationController
     include ActiveStorage::SetCurrent
     include Spree::Core::ControllerHelpers::Store
-    include GearedPagination::Controller
 
     include SolidusAdmin::ControllerHelpers::Authentication
     include SolidusAdmin::ControllerHelpers::Authorization

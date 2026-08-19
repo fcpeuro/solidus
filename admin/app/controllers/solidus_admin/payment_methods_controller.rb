@@ -17,10 +17,10 @@ module SolidusAdmin
         param: :q
       )
 
-      set_page_and_extract_portion_from(payment_methods)
+      payment_methods = payment_methods.page(params[:page]).without_count
 
       respond_to do |format|
-        format.html { render component("payment_methods/index").new(page: @page) }
+        format.html { render component("payment_methods/index").new(results: payment_methods) }
       end
     end
 

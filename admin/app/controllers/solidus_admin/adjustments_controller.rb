@@ -5,7 +5,7 @@ class SolidusAdmin::AdjustmentsController < SolidusAdmin::BaseController
 
   def index
     load_adjustments
-    set_page_and_extract_portion_from(@adjustments)
+    @adjustments = @adjustments.page(params[:page]).without_count
 
     respond_to do |format|
       format.html do
